@@ -21,7 +21,7 @@ connection.connect(function(err){
 app.get("/estudiante", function(req,res){
     let id= req.query.id
     if(id!== undefined){
-        let querytu=`SELECT first_name, last_name, entryDate
+        let querytu=`SELECT student_id,first_name, last_name, entryDate
         FROM students
         WHERE student_id=?`
         connection.query(querytu,[id],function (err, resultado,field) {
@@ -30,7 +30,7 @@ app.get("/estudiante", function(req,res){
         });
     }else{
         let querytu=
-        `SELECT first_name, last_name, entryDate
+        `SELECT student_id,first_name, last_name, entryDate
         FROM students`
         connection.query(querytu,function (err,resultado,field) {
             if (err) throw err;
@@ -47,18 +47,20 @@ app.post("/estudiante",function(req,res){
     })
 })
 
-/*app.put("/estudiante",function(req,res){
+app.put("/estudiante",function(req,res){
     let id = req.body.student_id
     let update = 
     `UPDATE students
     SET first_name = ?, last_name= ?, group_id=?, entryDate = ?
-    WHERE student_id = ?;`
-    connection.query(update,[id,req.body.first_name, req.body.last_name,req.body.group_id, req.body.entryDate],function(err,resultado,field){
+    WHERE student_id = ?`
+   
+    connection.query(update,[req.body.first_name, req.body.last_name,req.body.group_id, req.body.entryDate,id],function(err,resultado,field){
         if (err) throw err;
-        res.send(resultado);
+        resultado.message = `El profesor/a con el id ${id} ha sido actualizado`
+        res.send( resultado.message);
     })
-})*/
-/*
+})
+
 app.delete("/estudiante",function(req,res){
     let id = req.body.student_id
     let deleteStu=
@@ -67,10 +69,11 @@ app.delete("/estudiante",function(req,res){
     WHERE student_id=?`
     connection.query(deleteStu,[id],function (err, resultado,field) {
         if (err) throw err;
-        res.send(resultado);
+        resultado.message = `Se ha eliminado correctamente el  alumno con el id: ${id}`
+        res.send(resultado.message);
     });
 })
- */
+
 //PROFES
 
 app.get("/profesores", function(req,res){
@@ -102,6 +105,32 @@ app.post("/profesores",function(req,res){
     })
 })
 
+app.put("/profesores",function(req,res){
+    let id = req.body.idTeacher
+    let update = 
+    `UPDATE teachers
+    SET first_name = ?, last_name= ?
+    WHERE idTeacher = ?`
+   
+    connection.query(update,[req.body.first_name, req.body.last_name,id],function(err,resultado,field){
+        if (err) throw err;
+        resultado.message = `El profesor/a con el id ${id} ha sido actualizado`
+        res.send(resultado.message);
+    })
+})
+
+app.delete("/profesores",function(req,res){
+    let id = req.body.idTeacher
+    let deleteTeacher=
+    `DELETE
+    FROM teachers
+    WHERE idTeacher=?`
+    connection.query(deleteTeacher,[id],function (err, resultado,field) {
+        if (err) throw err;
+        resultado.message = `Se ha eliminado correctamente el profesor con el id: ${id}`
+        res.send(resultado.message);
+    });
+})
 //Grupo
 
 app.get("/grupos", function(req,res){
@@ -133,6 +162,32 @@ app.post("/grupos",function(req,res){
     })
 })
 
+app.put("/grupos",function(req,res){
+    let id = req.body.group_id
+    let update = 
+    `UPDATE groups
+    SET name = ?
+    WHERE group_id=?`
+   
+    connection.query(update,[req.body.name,id],function(err,resultado,field){
+        if (err) throw err;
+        resultado.message = `El grupo con el id ${id} ha sido actualizado`
+        res.send(resultado.message);
+    })
+})
+
+app.delete("/grupos",function(req,res){
+    let id = req.body.group_id
+    let deleteGroup=
+    `DELETE
+    FROM groups
+    WHERE group_id=?`
+    connection.query(deleteGroup,[id],function (err, resultado,field) {
+        if (err) throw err;
+        resultado.message = `Se ha eliminado correctamente el grupo con el id: ${id}`
+        res.send(resultado.message);
+    });
+})
 //Asignatura
 
 app.get("/asignatura", function(req,res){
@@ -164,6 +219,31 @@ app.post("/asignatura",function(req,res){
     })
 })
 
+app.put("/asignatura",function(req,res){
+    let id = req.body.subject_id
+    let update = 
+    `UPDATE subjects
+    SET title = ?
+    WHERE subject_id=?`
+   
+    connection.query(update,[req.body.title,id],function(err,resultado,field){
+        if (err) throw err;
+        resultado.message = `La asignatura con el id ${id} ha sido actualizada`
+        res.send(resultado.message);
+    })
+})
+app.delete("/asignatura",function(req,res){
+    let id = req.body.subject_id
+    let deleteSubject=
+    `DELETE
+    FROM subjects
+    WHERE subject_id=?`
+    connection.query(deleteSubject,[id],function (err, resultado,field) {
+        if (err) throw err;
+        resultado.message = `Se ha eliminado correctamente la asignatura con el id: ${id}`
+        res.send(resultado.message);
+    });
+})
 //Notas
 
 app.get("/notas", function(req,res){
@@ -189,16 +269,44 @@ app.post("/notas",function(req,res){
     })
 })
 
+app.put("/notas",function(req,res){
+    let id = req.body.student_id
+    let update = 
+    `UPDATE marks
+    SET mark = ?
+    WHERE student_id=?`
+   
+    connection.query(update,[req.body.mark,id],function(err,resultado,field){
+        if (err) throw err;
+        resultado.message = `La nota del estudiante con el id ${id} ha sido actualizada`
+        res.send(resultado.message);
+    })
+})
+
+app.delete("/notas",function(req,res){
+    let id = req.body.student_id
+    let deleteMarks=
+    `DELETE
+    FROM marks
+    WHERE student_id=?`
+    connection.query(deleteMarks,[id],function (err, resultado,field) {
+        if (err) throw err;
+        resultado.message = `Se ha eliminado correctamente la nota del estudiante con el id: ${id}`
+        res.send(resultado.message);
+    });
+})
+
+
 //GET ADICIONAL
 app.get("/media", function(req,res){
     let id= req.query.id
     if(id!== undefined){
-        let query=`SELECT AVG(mark)
+        let query=`SELECT AVG(mark) AS notaAlumno
         FROM marks
         WHERE student_id=?`
         connection.query(query,[id],function (err, resultado,field) {
             if (err) throw err;
-            res.send("La media del estudiante indicado es "+ JSON.stringify(resultado));
+            res.send(`La nota media obtenida por el alumno con el ${id} es igual a: ${JSON.stringify(resultado[0].notaAlumno)}`)
         });
     }else{
         res.send('No has introducido el id del estudiante para poder conocer la media')
@@ -215,7 +323,8 @@ app.get("/apuntadas", function(req,res){
         WHERE students.student_id=?`
         connection.query(query,[id],function (err, resultado,field) {
             if (err) throw err;
-            res.send(resultado);
+            
+            res.send(respuesta);
         });
     }else{
         let querytu=
@@ -223,6 +332,7 @@ app.get("/apuntadas", function(req,res){
         FROM marks
         INNER JOIN students ON(marks.student_id=students.student_id)
         INNER JOIN  subjects ON (marks.subject_id= subjects.subject_id)`
+
         connection.query(querytu,function (err, resultado,field) {
             if (err) throw err;
             res.send(resultado);
@@ -239,8 +349,10 @@ app.get("/impartidas", function(req,res){
         WHERE subject_teacher.idTeacher=?`
         connection.query(query,[id],function (err, resultado,field) {
             if (err) throw err;
+            
             res.send(resultado);
-        });
+        })
+       
     }else{
         let querytu=
         `SELECT subjects.title, teachers.first_name,teachers.last_name
