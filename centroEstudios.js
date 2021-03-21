@@ -273,12 +273,10 @@ app.put("/notas",function(req,res){
     let id = req.body.student_id
     let update = 
     `UPDATE marks
-    SET mark = ?
-    WHERE student_id=?`
-   
-    connection.query(update,[req.body.mark,id],function(err,resultado,field){
+    SET student_id = ?,subject_id = ?,date = ?,mark = ? WHERE mark_id=?`
+    connection.query(update,[req.body.student_id,req.body.subject_id, req.body.date,req.body.mark,id],function(err,resultado,field){
         if (err) throw err;
-        resultado.message = `La nota del estudiante con el id ${id} ha sido actualizada`
+        resultado.message = `Los datos de la nota con el id ${id} han sido actualizados`
         res.send(resultado.message);
     })
 })
