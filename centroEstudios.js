@@ -1,3 +1,4 @@
+const { json } = require("body-parser");
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -17,6 +18,14 @@ connection.connect(function(err){
         console.log("Te has conectado correctamente a la base de datos.")
     }
 })
+
+
+class UpdateColumn {
+    constructor(column, valueColumn){
+        this.column= column
+        this.valueColumn = valueColumn
+    }
+}
 
 app.get("/estudiante", function(req,res){
     let id= req.query.id
@@ -48,17 +57,49 @@ app.post("/estudiante",function(req,res){
 })
 
 app.put("/estudiante",function(req,res){
-    let id = req.body.student_id
-    let update = 
-    `UPDATE students
-    SET first_name = ?, last_name= ?, group_id=?, entryDate = ?
-    WHERE student_id = ?`
-   
-    connection.query(update,[req.body.first_name, req.body.last_name,req.body.group_id, req.body.entryDate,id],function(err,resultado,field){
-        if (err) throw err;
-        resultado.message = `El profesor/a con el id ${id} ha sido actualizado`
-        res.send( resultado.message);
-    })
+    let studentId = req.body.student_id;
+    let lastName = req.body.last_name;
+    let firstName = req.body.first_name
+    let entryDate = req.body.entrydate
+    let lista = []
+    if(studentId !== undefined){
+        if(firstName !== undefined){
+            let studentFirstName = new UpdateColumn("first_name", firstName)
+            lista.push(studentFirstName)
+        }
+        if(lastName!== undefined){
+            let studentLastName = new UpdateColumn("last_name", lastName)
+            lista.push(studentLastName)
+        }
+        if(entryDate !== undefined){
+            let dateStu = new UpdateColumn("entrydate", entryDate)
+            lista.push(dateStu)
+        }
+        let params = [];
+        let part1 = "UPDATE students SET ";
+        let part2 = "";
+        for (let i = 0; i < lista.length; i++) {
+          if (i === lista.length - 1) {
+            part2 += lista[i].column + "=? ";
+          } else {
+            part2 += lista[i].column + "=?, ";
+          }
+          params.push(lista[i].valueColumn);
+        }
+        params.push(studentId);
+        let part3 = "WHERE student_id =?";
+        let updateStudents = part1+part2+part3
+
+        connection.query(updateStudents,params,function(err,resultado,field){
+            if (err) throw err;
+            resultado.message = `Los datos del estudiante con el id ${studentId} han sido actualizados`
+            res.send(resultado.message);
+        })
+
+    }else{
+        res.send("No has introducido el id del estudiante.")
+    }
+    
 })
 
 app.delete("/estudiante",function(req,res){
@@ -105,18 +146,47 @@ app.post("/profesores",function(req,res){
     })
 })
 
+
 app.put("/profesores",function(req,res){
-    let id = req.body.idTeacher
-    let update = 
-    `UPDATE teachers
-    SET first_name = ?, last_name= ?
-    WHERE idTeacher = ?`
-   
-    connection.query(update,[req.body.first_name, req.body.last_name,id],function(err,resultado,field){
-        if (err) throw err;
-        resultado.message = `El profesor/a con el id ${id} ha sido actualizado`
-        res.send(resultado.message);
-    })
+    let idTeacher = req.body.idTeacher ;  
+    let lastName = req.body.last_name;
+    let firstName = req.body.first_name
+    let lista = []
+    if(idTeacher !== undefined){
+        if(firstName !== undefined){
+            let teacherFirstName = new UpdateColumn("first_name", firstName)
+            lista.push(teacherFirstName)
+        }
+        if(lastName!== undefined){
+            let teacherLastName = new UpdateColumn("last_name", lastName)
+            lista.push(teacherLastName)
+        }
+       
+        let params = [];
+        let part1 = "UPDATE teachers SET ";
+        let part2 = "";
+        for (let i = 0; i < lista.length; i++) {
+          if (i === lista.length - 1) {
+            part2 += lista[i].column + "=? ";
+          } else {
+            part2 += lista[i].column + "=?, ";
+          }
+          params.push(lista[i].valueColumn);
+        }
+        params.push(idTeacher);
+        let part3 = "WHERE idTeacher =?";
+        let updateTeacher = part1+part2+part3
+
+        connection.query(updateTeacher,params,function(err,resultado,field){
+            if (err) throw err;
+            resultado.message = `Los datos del profesor con el id ${idTeacher} han sido actualizados`
+            res.send(resultado.message);
+        })
+
+    }else{
+        res.send("No has introducido el id del profesor.")
+    }
+    
 })
 
 app.delete("/profesores",function(req,res){
@@ -162,19 +232,28 @@ app.post("/grupos",function(req,res){
     })
 })
 
-app.put("/grupos",function(req,res){
-    let id = req.body.group_id
-    let update = 
-    `UPDATE groups
-    SET name = ?
-    WHERE group_id=?`
-   
-    connection.query(update,[req.body.name,id],function(err,resultado,field){
+app.put("/grupos", function (req, res) {
+  let id = req.body.group_id;
+  let nameGrupo = req.body.name
+  if (id !== undefined && nameGrupo !== undefined) {
+
+    let updateGrupo = new UpdateColumn("name",nameGrupo)
+    let update = `UPDATE groups
+    SET ${updateGrupo.column} = ?
+    WHERE group_id=?`;
+    connection.query(
+      update,
+      [updateGrupo.valueColumn, id],
+      function (err, resultado, field) {
         if (err) throw err;
-        resultado.message = `El grupo con el id ${id} ha sido actualizado`
+        resultado.message = `El grupo con el id ${id} ha sido actualizado`;
         res.send(resultado.message);
-    })
-})
+      }
+    );
+  } else {
+    res.send(`No has introducido un grupo para actualizar`);
+  }
+});
 
 app.delete("/grupos",function(req,res){
     let id = req.body.group_id
@@ -221,16 +300,21 @@ app.post("/asignatura",function(req,res){
 
 app.put("/asignatura",function(req,res){
     let id = req.body.subject_id
-    let update = 
-    `UPDATE subjects
-    SET title = ?
-    WHERE subject_id=?`
+    let titleValue = req.body.title
+    if(id !== undefined && titleValue !== undefined){
+        let updateSubject = new UpdateColumn("title",titleValue)
+        let updateQuery =`UPDATE subjects
+        SET ${updateSubject.column} = ?
+        WHERE subject_id=?`
+        connection.query(updateQuery,[updateSubject.valueColumn,id],function(err,resultado,field){
+            if (err) throw err;
+            resultado.message = `La asignatura con el id ${id} ha sido actualizada`
+            res.send(resultado.message);
+        })
+    }else{
+        res.send("No has indicado la informacion de la asignatura que quieres cambiar")
+    }
    
-    connection.query(update,[req.body.title,id],function(err,resultado,field){
-        if (err) throw err;
-        resultado.message = `La asignatura con el id ${id} ha sido actualizada`
-        res.send(resultado.message);
-    })
 })
 app.delete("/asignatura",function(req,res){
     let id = req.body.subject_id
@@ -270,15 +354,56 @@ app.post("/notas",function(req,res){
 })
 
 app.put("/notas",function(req,res){
-    let id = req.body.student_id
-    let update = 
-    `UPDATE marks
-    SET student_id = ?,subject_id = ?,date = ?,mark = ? WHERE mark_id=?`
-    connection.query(update,[req.body.student_id,req.body.subject_id, req.body.date,req.body.mark,id],function(err,resultado,field){
-        if (err) throw err;
-        resultado.message = `Los datos de la nota con el id ${id} han sido actualizados`
-        res.send(resultado.message);
-    })
+    let studentId = req.body.student_id;
+    let subjectId = req.body.subject_id
+    let date = req.body.date
+    let mark = req.body.mark
+    let idMark = req.body.mark_id
+    let lista = []
+    if(idMark !== undefined){
+        if(studentId !== undefined){
+            let student = new UpdateColumn("student_id", studentId)
+            lista.push(student)
+        }
+        if(subjectId!== undefined){
+            let subjectMark = new UpdateColumn("subject_id", subjectId)
+            lista.push(subjectMark)
+
+        }
+        if(date !== undefined){
+            let dateMark = new UpdateColumn("date", date)
+            lista.push(dateMark)
+
+        }
+        if(mark !== undefined){
+            let markNumber = new UpdateColumn("mark", mark)
+            lista.push(markNumber)
+        }
+        let params = [];
+        let part1 = "UPDATE marks SET ";
+        let part2 = "";
+        for (let i = 0; i < lista.length; i++) {
+          if (i === lista.length - 1) {
+            part2 += lista[i].column + "=? ";
+          } else {
+            part2 += lista[i].column + "=?, ";
+          }
+          params.push(lista[i].valueColumn);
+        }
+        params.push(idMark);
+        let part3 = "WHERE mark_id =?";
+        let updateMark = part1+part2+part3
+
+        connection.query(updateMark,params,function(err,resultado,field){
+            if (err) throw err;
+            resultado.message = `Los datos de la nota con el id ${idMark} han sido actualizados`
+            res.send(resultado.message);
+        })
+
+    }else{
+        res.send("No has introducido el id de la nota.")
+    }
+    
 })
 
 app.delete("/notas",function(req,res){
