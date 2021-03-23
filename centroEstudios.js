@@ -19,12 +19,6 @@ connection.connect(function (err) {
   }
 });
 
-class UpdateColumn {
-  constructor(column, valueColumn) {
-    this.column = column;
-    this.valueColumn = valueColumn;
-  }
-}
 
 app.get("/estudiante", function (req, res) {
   let id = req.query.id;
@@ -34,17 +28,16 @@ app.get("/estudiante", function (req, res) {
         WHERE student_id=?`;
     connection.query(querytu, [id], function (err, resultado, field) {
       if (err) throw err;
-      res.send(err);
+      res.send(resultado);
+
     });
-  } else if (id == undefined) {
+  } else {
     let querytu = `SELECT student_id,first_name, last_name, entryDate
         FROM students`;
     connection.query(querytu, function (err, resultado, field) {
       if (err) throw err;
       res.send(resultado);
     });
-  } else if (id.length == 0) {
-    res.send("No existe el id");
   }
 });
 
@@ -110,7 +103,8 @@ app.delete("/estudiante", function (req, res) {
       if (err){
         res.send("Error " + err); 
       }else{
-        if (resultado.changedRows == 0) {
+        if (resultado.affectedRows == 0) {
+          
             res.status(404).send("El id introducido no existe");
           }else {
             resultado.message = `El estudiante con el id ${id} ha sido eliminado`;
@@ -165,7 +159,7 @@ app.post("/profesores", function (req, res) {
 app.put("/profesores", function (req, res) {
   let id = req.body.idTeacher;
   if (id !== null) {
-    let update = `UPDATE teachers SET first_name = COALESCE (?, first_name),last_name = COALESCE(?,last_name) WHERE idTeachers = ?`;
+    let update = `UPDATE teachers SET first_name = COALESCE (?, first_name),last_name = COALESCE(?,last_name) WHERE idTeacher = ?`;
     connection.query(
         update,
         [
@@ -200,7 +194,7 @@ app.delete("/profesores", function (req, res) {
     if (err){
       res.send("Error " + err); 
     }else{
-      if (resultado.changedRows == 0) {
+      if (resultado.affectedRows == 0) {
           res.status(404).send("El id introducido no existe");
         }else {
           resultado.message = `El profesor con el id ${id} ha sido eliminado`;
@@ -279,7 +273,7 @@ app.delete("/grupos", function (req, res) {
       if (err) {
         res.send("Error " + err);
       } else {
-        if (resultado.changedRows == 0) {
+        if (resultado.affectedRows == 0) {
           res.status(404).send("El id introducido no existe");
         } else {
           resultado.message = `El grupo con el id ${id} ha sido eliminado`;
@@ -334,7 +328,7 @@ app.put("/asignatura", function (req, res) {
         if (err) {
           res.send("Error " + err);
         } else {
-          if (resultado.changedRows == 0) {
+          if (resultado.affectedRows == 0) {
             res.status(404).send("El id introducido no existe");
           } else {
             resultado.message = `Los datos de las asignatura con el id ${id} han sido actualizados`;
@@ -355,7 +349,7 @@ app.delete("/asignatura", function (req, res) {
     if (err) {
       res.send("Error " + err);
     } else {
-      if (resultado.changedRows == 0) {
+      if (resultado.affectedRows == 0) {
         res.status(404).send("El id introducido no existe");
       } else {
         resultado.message = `La asignatura con  el id ${id} ha sido eliminad`;
@@ -418,7 +412,7 @@ app.put("/notas", function (req, res) {
         if (err) {
           res.send("Error " + err);
         } else {
-          if (resultado.changedRows == 0) {
+          if (resultado.affectedRows == 0) {
             res.status(404).send("El id introducido no existe");
           } else {
             resultado.message = `Los datos de la nota con el id ${id} han sido actualizados`;
@@ -440,7 +434,7 @@ app.delete("/notas", function (req, res) {
       if (err) {
         res.send("Error " + err);
       } else {
-        if (resultado.changedRows == 0) {
+        if (resultado.affectedRows == 0) {
           res.status(404).send("El id introducido no existe");
         } else {
           resultado.message = `La asignatura con  el id ${id} ha sido eliminad`;
@@ -480,9 +474,8 @@ app.get("/apuntadas", function (req, res) {
   if (id !== undefined) {
     let query = `SELECT subjects.title
         FROM marks
-        INNER JOIN students ON(marks.student_id=students.student_id)
         INNER JOIN  subjects ON (marks.subject_id= subjects.subject_id)
-        WHERE students.student_id=?`;
+        WHERE marks.student_id=?`;
     connection.query(query, [id], function (err, resultado, field) {
       if (err) throw err;
 
